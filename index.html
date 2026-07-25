@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Пойдём на свидание?</title>
+  <meta name="theme-color" content="#ff4d88" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Inter, system-ui, sans-serif; }
+    body {
+      min-height: 100vh;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #ff4d88, #ff9a8b 55%, #ffd36e);
+      position: relative;
+    }
+    .hearts { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .heart { position: absolute; bottom: -40px; color: rgba(255,255,255,.78); font-size: 18px; animation: floatUp linear infinite; user-select: none; }
+    @keyframes floatUp {
+      0% { transform: translateY(0) translateX(0) rotate(0deg) scale(.8); opacity: 0; }
+      12% { opacity: 1; }
+      50% { transform: translateY(-55vh) translateX(18px) rotate(18deg) scale(1.08); }
+      100% { transform: translateY(-120vh) translateX(-18px) rotate(-10deg) scale(1.4); opacity: 0; }
+    }
+    .card {
+      width: min(92vw, 520px);
+      padding: 30px 26px 26px;
+      border-radius: 30px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.28);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 20px 80px rgba(66,18,41,.25);
+      color: #fff;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    .badge { display: inline-flex; gap: 8px; padding: 10px 16px; border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.22); margin-bottom: 18px; font-size: 14px; }
+    h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.05; margin-bottom: 12px; text-shadow: 0 8px 30px rgba(0,0,0,.18); }
+    .subtitle { font-size: 17px; line-height: 1.55; opacity: .96; margin-bottom: 22px; }
+    .buttons { position: relative; height: 160px; margin: 6px 0 8px; overflow: hidden; touch-action: none; }
+    button {
+      border: none; border-radius: 999px; padding: 14px 26px; font-size: 17px; font-weight: 700;
+      cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+      position: absolute; user-select: none; -webkit-tap-highlight-color: transparent; white-space: nowrap;
+    }
+    #yesBtn {
+      left: 50%; top: 18px; transform: translateX(-50%);
+      background: linear-gradient(135deg, #fff, #ffeaf1); color: #d81b60;
+      box-shadow: 0 12px 24px rgba(0,0,0,.12);
+      z-index: 2;
+    }
+
+    /* Кнопка "Нет" — без transform, изначально в углу */
+    #noBtn {
+      pointer-events: auto;
+      transition: none;
+      left: 50%;
+      top: 82px;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.32);
+      box-shadow: 0 12px 24px rgba(0,0,0,.10);
+      z-index: 1;
+    }
+
+    #yesBtn:hover { transform: translateX(-50%) scale(1.06); filter: brightness(1.02); box-shadow: 0 16px 32px rgba(0,0,0,.16); }
+    .note { margin-top: 10px; font-size: 13px; opacity: .9; line-height: 1.45; }
+  </style>
+</head>
+<body>
+  <div class="hearts" id="hearts"></div>
+
+  <main class="card">
+    <div class="badge">💖 Моей любимой Софе 💖</div>
+    <h1>Пойдёшь со мной на свидание?</h1>
+    <p class="subtitle">У тебя есть только правильный ответ 😈</p>
+
+    <div class="buttons" id="btnArea">
+      <button id="yesBtn">Да 💘</button>
+      <button id="noBtn">Нет 🔪</button>
+    </div>
+  </main>
+
+  <script>
+    const noBtn = document.getElementById("noBtn");
+    const yesBtn = document.getElementById("yesBtn");
+    const btnArea = document.getElementById("btnArea");
+    const hearts = document.getElementById("hearts");
+
+    // Полная блокировка клика
+    noBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    });
+
+    function moveNoButton() {
+      const area = btnArea.getBoundingClientRect();
+      const btn = noBtn.getBoundingClientRect();
+      const pad = 16; // отступ от края
+
+      const maxX = area.width - btn.width - pad;
+      const maxY = area.height - btn.height - pad;
+
+      // Случайная позиция внутри области, но не слишком близко к краям
+      const randomX = pad + Math.random() * (maxX - pad);
+      const randomY = pad + Math.random() * (maxY - pad);
+
+      noBtn.style.left = randomX + "px";
+      noBtn.style.top = randomY + "px";
+      noBtn.style.transform = "none";
+    }
+
+    // При любом событии, которое может привести к наведению/клику — убегаем
+    noBtn.addEventListener("mouseenter", moveNoButton);
+    noBtn.addEventListener("mousemove", moveNoButton);
+    noBtn.addEventListener("pointerover", moveNoButton);
+    noBtn.addEventListener("pointermove", moveNoButton);
+
+    // Мобильные: при касании тоже убегаем
+    noBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      moveNoButton();
+    }, { passive: false });
+
+    // Дополнительно: если вдруг курсор "залип", при любом движении по кнопке она убежит
+    noBtn.addEventListener("mouseover", moveNoButton);
+
+    yesBtn.addEventListener("click", () => {
+      window.location.href = "places.html";
+    });
+
+    // Анимация сердечек
+    for (let i = 0; i < 28; i++) {
+      const h = document.createElement("div");
+      h.className = "heart";
+      h.textContent = Math.random() > 0.5 ? "♥" : "❤";
+      h.style.left = Math.random() * 100 + "vw";
+      h.style.fontSize = (14 + Math.random() * 26) + "px";
+      h.style.animationDuration = (6 + Math.random() * 8) + "s";
+      h.style.animationDelay = (-Math.random() * 10) + "s";
+      hearts.appendChild(h);
+    }
+  </script>
+</body>
+</html>

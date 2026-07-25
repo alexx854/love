@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Когда?</title>
+  <meta name="theme-color" content="#ff4d88" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Inter, system-ui, sans-serif; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow-x: hidden;
+      background: linear-gradient(135deg, #ff4d88, #ff9a8b 55%, #ffd36e);
+      position: relative;
+      padding: 18px;
+    }
+    .hearts { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .heart { position: absolute; bottom: -40px; color: rgba(255,255,255,.78); font-size: 18px; animation: floatUp linear infinite; user-select: none; }
+    @keyframes floatUp {
+      0% { transform: translateY(0) translateX(0) rotate(0deg) scale(.8); opacity: 0; }
+      12% { opacity: 1; }
+      50% { transform: translateY(-55vh) translateX(18px) rotate(18deg) scale(1.08); }
+      100% { transform: translateY(-120vh) translateX(-18px) rotate(-10deg) scale(1.4); opacity: 0; }
+    }
+    .card {
+      width: min(96vw, 820px);
+      padding: 28px 22px 22px;
+      border-radius: 30px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.28);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 20px 80px rgba(66, 18, 41, 0.25);
+      color: white;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    h1 { font-size: clamp(26px, 4.5vw, 40px); margin-bottom: 10px; line-height: 1.15; }
+    .subtitle { font-size: 16px; opacity: .95; margin-bottom: 18px; line-height: 1.5; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .day-btn {
+      border: 1px solid rgba(255,255,255,.26);
+      background: rgba(255,255,255,.16);
+      color: white;
+      border-radius: 22px;
+      padding: 18px 10px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+      min-height: 88px;
+      transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+      box-shadow: 0 10px 20px rgba(0,0,0,.08);
+    }
+
+    .day-btn:hover {
+      transform: translateY(-3px);
+      background: rgba(255,255,255,.24);
+      box-shadow: 0 16px 28px rgba(0,0,0,.12);
+    }
+
+    .selected {
+      margin-top: 18px;
+      display: none;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.22);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .hidden-form { display: none; }
+
+    .back {
+      margin-top: 14px;
+      display: inline-block;
+      color: white;
+      text-decoration: none;
+      opacity: .92;
+      font-weight: 600;
+    }
+
+    @media (max-width: 760px) {
+      .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 520px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .day-btn { min-height: 72px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hearts" id="hearts"></div>
+
+  <main class="card">
+    <h1>Отличный выбор. Теперь осталась дата. Когда?</h1>
+    <div class="subtitle">Выбирай</div>
+
+    <div class="grid">
+      <button class="day-btn" data-day="20 августа">20 августа</button>
+      <button class="day-btn" data-day="21 августа">21 августа</button>
+      <button class="day-btn" data-day="22 августа">22 августа</button>
+      <button class="day-btn" data-day="23 августа">23 августа</button>
+      <button class="day-btn" data-day="24 августа">24 августа</button>
+      <button class="day-btn" data-day="25 августа">25 августа</button>
+      <button class="day-btn" data-day="26 августа">26 августа</button>
+      <button class="day-btn" data-day="27 августа">27 августа</button>
+    </div>
+
+    <div class="selected" id="selected"></div>
+
+    <form id="form" action="https://formspree.io/f/xrenynpe" method="POST" class="hidden-form">
+      <input type="hidden" name="stage" value="date">
+      <input type="hidden" name="date" id="dateField">
+      <button type="submit" id="submitReal"></button>
+    </form>
+
+    <a href="places.html" class="back">← Назад</a>
+  </main>
+
+  <script>
+    const hearts = document.getElementById("hearts");
+    const selected = document.getElementById("selected");
+    const dateField = document.getElementById("dateField");
+    const form = document.getElementById("form");
+
+    let submitting = false;
+
+function submitDateAndGo() {
+  if (submitting) return;
+  submitting = true;
+
+  const data = new FormData(form);
+
+  fetch(form.action, {
+    method: form.method,
+    body: data,
+    headers: {
+      'Accept': 'application/json'
+    }
+  })
+  .then(res => {
+    if (res.ok) {
+      window.location.href = "final.html";
+    } else {
+      alert("Не отправилось, попробуй ещё раз");
+      submitting = false;
+    }
+  })
+  .catch(() => {
+    alert("Ошибка сети, попробуй ещё раз");
+    submitting = false;
+  });
+}
+
+document.querySelectorAll(".day-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const day = btn.dataset.day;
+    dateField.value = day;
+    selected.style.display = "block";
+    selected.textContent = "Выбрано: " + day;
+    submitDateAndGo();
+  });
+});
+
+    for (let i = 0; i < 30; i++) {
+      const h = document.createElement("div");
+      h.className = "heart";
+      h.textContent = Math.random() > 0.5 ? "♥" : "❤";
+      h.style.left = Math.random() * 100 + "vw";
+      h.style.fontSize = (14 + Math.random() * 26) + "px";
+      h.style.animationDuration = (6 + Math.random() * 8) + "s";
+      h.style.animationDelay = (-Math.random() * 10) + "s";
+      hearts.appendChild(h);
+    }
+  </script>
+</body>
+</html>
